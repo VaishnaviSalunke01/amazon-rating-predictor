@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Amazon Rating Predictor</title>
+    <style>
+    :root {
+        --amazon-orange: #FF9900;
+        --amazon-navy: #232F3E;
+        --light-gray: #f3f3f3;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--light-gray);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    .card {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        width: 400px;
+        text-align: center;
+    }
+
+    h2 { color: var(--amazon-navy); margin-bottom: 20px; }
+
+    .input-group { margin-bottom: 15px; text-align: left; }
+
+    label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
+
+    input, select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box; /* Important for alignment */
+    }
+
+    button {
+        width: 100%;
+        background-color: var(--amazon-orange);
+        border: 1px solid #a88734;
+        color: black;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: 0.3s;
+    }
+
+    button:hover { background-color: #e68a00; }
+
+    /* Loading Spinner Styling */
+    .spinner {
+        display: none; /* Hidden by default */
+        margin: 20px auto;
+        width: 30px;
+        height: 30px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid var(--amazon-orange);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    #result { margin-top: 20px; font-weight: bold; color: var(--amazon-navy); }
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Amazon Rating Predictor</h2>
+    
+    <div class="input-group">
+        <label>Product Price (₹)</label>
+        <input type="number" id="price" placeholder="e.g. 799">
+    </div>
+
+    <div class="input-group">
+        <label>Material / Style</label>
+        <select id="material">
+            <option value="is_Cotton">Cotton</option>
+            <option value="is_Silk">Silk</option>
+            <option value="is_Chiffon">Chiffon</option>
+            <option value="is_Linen">Linen</option>
+            <option value="is_Ready_To_Wear">Ready to Wear</option>
+        </select>
+    </div>
+
+    <button onclick="getPrediction()">Check Predicted Rating</button>
+    
+    <div id="loading-spinner" class="spinner"></div>
+    
+    <div id="result"></div>
+</div>
+
+<script>
+    // JavaScript: The Bridge to FastAPI
+    async function getPrediction() {
+    const resultDiv = document.getElementById('result');
+    const spinner = document.getElementById('loading-spinner');
+    const price = document.getElementById('price').value;
+
+    // Reset UI
+    resultDiv.innerText = "";
+    spinner.style.display = "block"; // SHOW SPINNER
+
+    // Basic Validation
+    if (!price || price <= 0 || price > 10000) {
+        spinner.style.display = "none";
+        resultDiv.style.color = "red";
+        resultDiv.innerText = "❌ Please enter a valid price (1 - 10,000)";
+        return;
+    }
+
+    // Prepare data (Matching your FastAPI model)
+    const inputData = {
+        Prices: parseFloat(price),
+        is_Cotton: document.getElementById('material').value === "is_Cotton" ? 1 : 0,
+        is_Silk: document.getElementById('material').value === "is_Silk" ? 1 : 0,
+        is_Chiffon: document.getElementById('material').value === "is_Chiffon" ? 1 : 0,
+        is_Linen: document.getElementById('material').value === "is_Linen" ? 1 : 0,
+        is_Ready_To_Wear: document.getElementById('material').value === "is_Ready_To_Wear" ? 1 : 0
+    };
+
+    try {
+        const response = await fetch('http://127.0.0.1:8000/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(inputData)
+        });
+
+        const data = await response.json();
+        spinner.style.display = "none"; // HIDE SPINNER
+        resultDiv.style.color = "#232F3E";
+        resultDiv.innerHTML = `⭐ Predicted Rating: <strong>${data.predicted_rating} / 5</strong>`;
+    } catch (error) {
+        spinner.style.display = "none";
+        resultDiv.innerText = "❌ Server Error. Is FastAPI running?";
+    }
+} 
+</script>
+
+</body>
+</html>
