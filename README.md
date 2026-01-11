@@ -44,3 +44,16 @@ pip install -r requirements.txt
 
 ### **Step 4: Start the Backend Server**
 uvicorn main:app --reload
+
+
+## 🏗️ Project Architecture
+
+This project follows a **Decoupled Architecture**, separating the user interface from the machine learning logic. This allows for independent scaling and management of the frontend and backend.
+
+
+
+### **The Workflow:**
+1. **Frontend (Netlify):** Captures user inputs (Price, Material) and sends an asynchronous `POST` request using the JavaScript Fetch API.
+2. **Backend (Render):** A FastAPI server receives the JSON payload, validates the data using Pydantic, and passes it to the ML model.
+3. **ML Model:** The pre-trained Random Forest Regressor (`rating_predictor.pkl`) processes the features and returns a numerical prediction.
+4. **Response:** The backend sends a JSON response back to the frontend, which updates the UI dynamically without a page refresh.
