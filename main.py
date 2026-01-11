@@ -9,7 +9,7 @@ import pandas as pd
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all websites to talk to your API
+    allow_origins=["https://amazon-saree-rating-predictor.netlify.app"],  # Allows all websites to talk to your API
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -47,4 +47,5 @@ def predict_rating(data: PredictionInput):
             "error_type": type(e).__name__,
             "error_message": str(e),
             "tip": "Check if your Training features (X) match these FastAPI features."
+
         }
